@@ -32,7 +32,13 @@ def _check_torch_install() -> None:
 
     torch_minor = tuple(torch_version.split("+")[0].split(".")[:2])
     torchaudio_minor = tuple(torchaudio_version.split("+")[0].split(".")[:2])
-    if torch_minor != torchaudio_minor:
+    # ComfyUI: allow the locally tested ROCm version pair.
+    _tested_rocm_pair = (
+        torch_version == "2.14.0+rocm7.2"
+        and torchaudio_version == "2.11.0+rocm7.2"
+        and __import__("torch").version.hip is not None
+    )
+    if torch_minor != torchaudio_minor and not _tested_rocm_pair:
         raise RuntimeError(
             f"torch ({torch_version}) and torchaudio ({torchaudio_version}) "
             f"minor versions do not match.\n{_install_hint}"
